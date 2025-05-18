@@ -1,6 +1,5 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  max-width: 600px;
   margin: 40px auto;
   padding: 0 20px;
   background: #f4f6f8;
@@ -14,6 +13,8 @@ h1 {
 }
 
 #quiz-container {
+  max-width: 900px; /* можно 800–1000px на ваше усмотрение */
+  margin: 0 auto;
   background: #ffffff;
   padding: 25px 30px;
   border-radius: 10px;
@@ -106,4 +107,70 @@ button.nav-btn:hover:not(:disabled) {
   margin-bottom: 20px;
   border-bottom: 1px solid #ccc;
   padding-bottom: 10px;
+}
+
+#question-indicators {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #007bff;
+  border-radius: 50%;
+  color: #007bff;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.indicator:hover {
+  background-color: #e6f0ff;
+}
+
+.indicator.answered {
+  background-color: #007bff;
+  color: white;
+}
+
+.indicator.current {
+  border-color: #0056b3;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+#question-indicators {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #007bff;
+  background-color: white;
+  color: #007bff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.indicator.answered {
+  background-color: #007bff;
+  color: white;
+}
+
+.indicator.current {
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }

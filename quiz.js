@@ -1,6 +1,7 @@
 let currentQuestionIndex = 0;
 let userAnswers = new Array(quizData.length).fill(null);
 
+const indicatorsEl = document.getElementById('question-indicators');
 const quizContainer = document.getElementById('quiz-container');
 const questionEl = document.getElementById('question');
 const answersEl = document.getElementById('answers');
@@ -10,12 +11,34 @@ const startBtn = document.getElementById('startBtn');
 const startContainer = document.getElementById('start-container');
 const resultEl = document.getElementById('result');
 
+const saveIndicator = document.createElement('div');
+saveIndicator.id = 'save-indicator';
+saveIndicator.style = 'text-align:right; margin-top:10px; font-size:0.9em; color:gray;';
+quizContainer.parentNode.insertBefore(saveIndicator, quizContainer.nextSibling);
+
+// Убираем создание и работу с кнопкой просмотра прошлого результата
+// const viewLastResultBtn = document.createElement('button');
+// viewLastResultBtn.id = 'viewLastResultBtn';
+// viewLastResultBtn.className = 'nav-btn';
+// viewLastResultBtn.style = 'margin-top: 10px; display:none;';
+// viewLastResultBtn.textContent = 'Просмотреть прошлый результат';
+// startContainer.appendChild(viewLastResultBtn);
+
+// // Показываем кнопку просмотра прошлого результата, если есть данные
+// if (localStorage.getItem('lastResult')) {
+//   viewLastResultBtn.style.display = 'inline-block';
+// }
+
+// viewLastResultBtn.addEventListener('click', () => {
+//   // Логика показа прошлого результата — удалена
+// });
+
 startBtn.addEventListener('click', () => {
   startContainer.style.display = 'none';
   quizContainer.style.display = 'block';
 
-  // При старте загружаем прогресс из localStorage
-  loadProgress();
+  loadProgress();     // Загружаем прогресс из localStorage
+  renderIndicators(); // Рендерим индикаторы сразу
   loadQuestion();
 });
 
@@ -35,6 +58,20 @@ nextBtn.addEventListener('click', () => {
     saveProgress();
     loadQuestion();
   } else {
+    // Проверка на неотвеченные вопросы
+    const unansweredIndexes = userAnswers
+      .map((ans, idx) => ans === null ? idx : null)
+      .filter(i => i !== null);
+
+    if (unansweredIndexes.length > 0) {
+      const confirmReturn = confirm(`Вы не ответили на ${unansweredIndexes.length} вопрос(а). Вернуться к ним перед завершением?`);
+      if (confirmReturn) {
+        currentQuestionIndex = unansweredIndexes[0]; // переходим к первому неотвеченному
+        loadQuestion();
+        return;
+      }
+    }
+
     showResult();
     clearProgress(); // очистить прогресс после окончания
   }
@@ -55,7 +92,8 @@ function loadQuestion() {
       userAnswers[currentQuestionIndex] = i;
       updateSelection();
       nextBtn.disabled = false;
-      saveProgress(); // сохраняем сразу после выбора ответа
+      saveProgress();
+      renderIndicators(); // обновляем индикаторы после выбора
     });
 
     answersEl.appendChild(btn);
@@ -66,6 +104,8 @@ function loadQuestion() {
   prevBtn.disabled = currentQuestionIndex === 0;
   nextBtn.textContent = currentQuestionIndex === quizData.length - 1 ? 'Завершить' : 'Далее';
   nextBtn.disabled = userAnswers[currentQuestionIndex] === null;
+
+  renderIndicators(); // обновляем индикаторы при загрузке вопроса
 }
 
 function updateSelection() {
@@ -76,6 +116,7 @@ function updateSelection() {
 }
 
 function showResult() {
+  indicatorsEl.innerHTML = '';
   quizContainer.style.display = 'none';
   resultEl.innerHTML = '';
 
@@ -118,6 +159,14 @@ function showResult() {
   scoreText.textContent = `Вы ответили правильно на ${correctCount} из ${quizData.length} вопросов.`;
   resultEl.prepend(scoreText);
 
+  // Убираем сохранение lastResult и показ кнопки просмотра результата
+  // localStorage.setItem('lastResult', JSON.stringify({
+  //   userAnswers,
+  //   date: new Date().toISOString()
+  // }));
+
+  // viewLastResultBtn.style.display = 'inline-block';
+
   startContainer.style.display = 'block';
   startBtn.textContent = "Пройти заново";
   startBtn.onclick = () => {
@@ -134,16 +183,21 @@ function showResult() {
   };
 }
 
-// Сохраняем прогресс в localStorage
 function saveProgress() {
   const progress = {
     currentQuestionIndex,
-    userAnswers
+    userAnswers,
+    timestamp: new Date().toISOString()
   };
   localStorage.setItem('quizProgress', JSON.stringify(progress));
+  updateSaveIndicator(progress.timestamp);
 }
 
-// Загружаем прогресс из localStorage
+function updateSaveIndicator(isoString) {
+  const time = new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  saveIndicator.textContent = `Сохранено в ${time}`;
+}
+
 function loadProgress() {
   const saved = localStorage.getItem('quizProgress');
   if (saved) {
@@ -152,6 +206,9 @@ function loadProgress() {
       if (progress.currentQuestionIndex !== undefined && Array.isArray(progress.userAnswers)) {
         currentQuestionIndex = progress.currentQuestionIndex;
         userAnswers = progress.userAnswers;
+        if (progress.timestamp) {
+          updateSaveIndicator(progress.timestamp);
+        }
       }
     } catch (e) {
       console.error('Ошибка чтения прогресса:', e);
@@ -159,13 +216,47 @@ function loadProgress() {
   }
 }
 
-// Очистить прогресс (например, после окончания)
 function clearProgress() {
   localStorage.removeItem('quizProgress');
 }
 
+function renderIndicators() {
+  let indicatorsContainer = document.getElementById('question-indicators');
 
-// ✅ Досрочное завершение викторины через консоль
+  if (!indicatorsContainer) {
+    indicatorsContainer = document.createElement('div');
+    indicatorsContainer.id = 'question-indicators';
+    quizContainer.insertBefore(indicatorsContainer, questionEl);
+  }
+
+  indicatorsContainer.innerHTML = '';
+
+  quizData.forEach((_, i) => {
+    const circle = document.createElement('button');
+    circle.className = 'indicator';
+    circle.textContent = i + 1;
+
+    // Закрашиваем, если уже есть ответ
+    if (userAnswers[i] !== null) {
+      circle.classList.add('answered');
+    }
+
+    // Подсвечиваем текущий
+    if (i === currentQuestionIndex) {
+      circle.classList.add('current');
+    }
+
+    circle.addEventListener('click', () => {
+      currentQuestionIndex = i;
+      loadQuestion();
+      saveProgress();
+    });
+
+    indicatorsContainer.appendChild(circle);
+  });
+}
+
+// Для досрочного завершения из консоли (опционально)
 window.finishQuiz = function () {
   showResult();
   clearProgress();

@@ -2,27 +2,31 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Викторина</title>
+  <title>Подготовка к экзамену по Веб-Технологиям</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <h1>Простая викторина</h1>
+  <h1>Подготовка к экзамену по Веб-Технологиям</h1>
 
-  <div id="quiz-container" style="display:none;">
+  <div id="quiz-container" style="display:none; max-width: 600px; margin: auto;">
+    <div id="question-indicators" style="text-align: center;"></div>
     <div id="question"></div>
     <div id="answers"></div>
-    <div id="navigation">
-      <button id="prevBtn" class="nav-btn">Назад</button>
-      <button id="nextBtn" class="nav-btn" disabled>Далее</button>
+    <div id="navigation" style="display:flex; justify-content: space-between; align-items: center;">
+      <div id="save-indicator" style="font-size:0.9em; color:gray;"></div>
+      <div>
+        <button id="prevBtn" class="nav-btn">Назад</button>
+        <button id="nextBtn" class="nav-btn" disabled>Далее</button>
+      </div>
     </div>
   </div>
 
-  <div id="start-container" style="text-align:center;">
+  <div id="start-container" style="text-align:center; margin-top: 30px;">
     <button id="startBtn" class="nav-btn">Старт</button>
   </div>
 
-  <div id="result"></div>
+  <div id="result" style="max-width: 600px; margin: 20px auto;"></div>
 
   <script src="quiz_questions.js"></script>
   <script src="quiz.js"></script>
